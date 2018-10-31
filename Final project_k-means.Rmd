@@ -1,46 +1,98 @@
 ---
-title: "final project - k-means"
-output: html_document
+title: "final project k-means"
+output:
+  html_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+## K-means classifier of data "wine"
+
 ```{r}
 data(wine, package="rattle")
 library('fpc')
-set.seed(11)
 data.train = wine[,-1]
-fit.km = kmeans(data.train,3)
-plotcluster(data.train, fit.km$cluster)
-fit.km
+set.seed(10)
+kmean_cluster=function(data,kinds){
+  start=sample(nrow(data),kinds)
+  start_value=data[start,]
+  distances=matrix(0,nrow=nrow(data),ncol=kinds+1)
+  index=matrix(1,nrow=nrow(data),1)
+  while(all(distances[,kinds+1]!=index)){
+    index=distances[,kinds+1]
+    for(j in 1:nrow(data)){
+      for(k in 1:kinds){
+        distances[j,k]=sum((data[j,]-start_value[k,])^2)
+      }
+    }
+    distances[,kinds+1]=apply(distances[,1:kinds],1,which.min)
+    for(k in 1:kinds){
+      start_value[k,]=apply(data[which(distances[,kinds+1]==k),],2,mean)
+    }
+  }
+  return(list(distances[,kinds+1],start_value))
+}
+
+fit.km=kmean_cluster(data.train,3)[1]
+plotcluster(data.train, unlist(fit.km))
+
 ```
 
+Then, we calculate the accuracy of the K-means classifier. The specific procedures are as follows:
+
+(1) Calculate the number of matched data between the three types of original data "wine" and the three types of the results of K-means cluster.
+
+(2) Find the maximum matching number of each type of wine.
+
+(3) Calculate the total matching number and accuracy.
+
 ```{r}
-fit_type=as.matrix(fit.km$centers)
-wine_type_data=rbind(apply(wine[which(wine[,1]==1),-1],2,mean),apply(wine[which(wine[,1]==2),-1],2,mean),apply(wine[which(wine[,1]==3),-1],2,mean))
-wine_type=as.matrix(wine_type_data)
+fit=unlist(fit.km)
 test1=matrix(0,3,3)
 for(i in 1:3){
   for(j in 1:3){
-    test1[i,j]=sum((fit_type[i,]-wine_type[j,])^2)
+    test1[i,j]=sum(wine[which(fit==i),1]==j)/sum(fit==i)
   }
 }
 test1
-#fit1=fit.km$centers[1,]
-#fit2=fit.km$centers[2,]
-#fit3=fit.km$centers[3,]
-#wine1=apply(wine[which(wine[,1]==1),-1],2,mean)
-#wine2=apply(wine[which(wine[,1]==2),-1],2,mean)
-#wine3=apply(wine[which(wine[,1]==3),-1],2,mean)
 ```
 
-According to the outcome, we can see the types 
+According to the outcome, we can see the wine types 1,2,3 are corresponding to k-means cluster types 2,3,1 respectively. Then, we can calculate the match rate
+```{r}
+a1=sum(fit[which(wine[,1]==1)]==2)
+a2=sum(fit[which(wine[,1]==2)]==3)
+a3=sum(fit[which(wine[,1]==3)]==1)
+accuracy=(a1+a2+a3)/nrow(wine)
+```
 
-### Clusters analysis 1
-(1)According to the plot, one can observe that the majority of the samples are separated into three different clusters. However, some samples which are separated into different clusters are very close to each other, and some of them are even enclosed by samples in other clusters. As a result, the outcome of clusters make sense to some degree but maybe not quite well.
-(2)It can be seen that between_SS / total_SS =  85.1 %, which means that the distance between clusters are relatively large, and the clusters are well-separated to some extent but not quite well.
+The number of original type 1 in dataset wine is `r sum(wine[,1]==1)`.
+
+The number of original type 2 in dataset wine is `r sum(wine[,1]==2)`.
+
+The number of original type 3 in dataset wine is `r sum(wine[,1]==3)`.
+
+The number of K-means cluster successfully matches original type 1 in dataset wine is `r a1`.
+
+The number of K-means cluster successfully matches original type 2 in dataset wine is `r a2`.
+
+The number of K-means cluster successfully matches original type 3 in dataset wine is `r a3`.
+
+The matched rate of original type 1 in wine is `r a1/sum(wine[,1]==1)`.
+
+The matched rate of original type 2 in wine is `r a2/sum(wine[,1]==2)`.
+
+The matched rate of original type 3 in wine is `r a3/sum(wine[,1]==3)`.
+
+The total accuracy of K-means cluster is `r accuracy`.
+
+### K-means cluster analysis 1
+(1) According to the plot, one can observe that the majority of the samples are separated into three different clusters. However, some samples which are separated into different clusters are very close to each other, and some of them are even enclosed by samples in other clusters. As a result, the outcome of clusters make sense to some degree but maybe not quite well.
+(2) It can be seen from our algorithm that the total accuracy is 70.78%, among which the match rates of types 1 and 3 of wine are very high, but the type 2 of wine does not match very well. To sum up, most of the data are matched well, but there are also some data that were not matched quite well.
+
+## K-means classifier of data "scale(wine)"
 
 ### Function of scale()
 Scale command can centralize and standardize an array. The numeric centering and scalings are returned as attributes: "scaled:center" and "scaled:scale". Towards each number $x$ in the array, scale command change it into $x_{scale}= \frac{x-scaled:cente}{scaled:scale}$.
@@ -50,39 +102,243 @@ To be special, scaled:center is the mean value of the array, which is used to ma
 ```{r}
 data(wine, package="rattle")
 library('fpc')
-set.seed(111)
 data.train = scale(wine[,-1])
-fit.km = kmeans(data.train,3)
-plotcluster(data.train, fit.km$cluster)
+set.seed(10)
+kmean_cluster=function(data,kinds){
+  start=sample(nrow(data),kinds)
+  start_value=data[start,]
+  distances=matrix(0,nrow=nrow(data),ncol=kinds+1)
+  index=matrix(1,nrow=nrow(data),1)
+  while(all(distances[,kinds+1]!=index)){
+    index=distances[,kinds+1]
+    for(j in 1:nrow(data)){
+      for(k in 1:kinds){
+        distances[j,k]=sum((data[j,]-start_value[k,])^2)
+      }
+    }
+    distances[,kinds+1]=apply(distances[,1:kinds],1,which.min)
+    for(k in 1:kinds){
+      start_value[k,]=apply(data[which(distances[,kinds+1]==k),],2,mean)
+    }
+  }
+  return(list(distances[,kinds+1],start_value))
+}
+
+fit.km=kmean_cluster(data.train,3)[1]
+plotcluster(data.train, unlist(fit.km))
 
 ```
 
-### Clusters analysis 2
+```{r}
+fit=unlist(fit.km)
+test1=matrix(0,3,3)
+for(i in 1:3){
+  for(j in 1:3){
+    test1[i,j]=sum(wine[which(fit==i),1]==j)/sum(fit==i)
+  }
+}
+test1
+```
+
+According to the outcome, we can see the wine types 1,2,3 are corresponding to k-means cluster types 2,3,1 respectively. Then, we can calculate the match rate
+
+```{r}
+a1=sum(fit[which(wine[,1]==1)]==2)
+a2=sum(fit[which(wine[,1]==2)]==3)
+a3=sum(fit[which(wine[,1]==3)]==1)
+accuracy=(a1+a2+a3)/nrow(wine)
+```
+
+The number of original type 1 in dataset wine is `r sum(wine[,1]==1)`.
+
+The number of original type 2 in dataset wine is `r sum(wine[,1]==2)`.
+
+The number of original type 3 in dataset wine is `r sum(wine[,1]==3)`.
+
+The number of K-means cluster successfully matches original type 1 in dataset wine is `r a1`.
+
+The number of K-means cluster successfully matches original type 2 in dataset wine is `r a2`.
+
+The number of K-means cluster successfully matches original type 3 in dataset wine is `r a3`.
+
+The matched rate of original type 1 in wine is `r a1/sum(wine[,1]==1)`.
+
+The matched rate of original type 2 in wine is `r a2/sum(wine[,1]==2)`.
+
+The matched rate of original type 3 in wine is `r a3/sum(wine[,1]==3)`.
+
+The total accuracy of K-means cluster is `r accuracy`.
+
+
+### K-means cluster analysis 2
+
+(1) According to the plot, we can see that the majority of the samples are separated into three different clusters. However, there still exist some samples which are enclosed by samples in other clusters. In other words, a minority of might be classified into the other clusters. As a result, the outcome of clusters make sense to some degree but still not quite well.
+(2) It can be seen from our algorithm that the total accuracy is 76.96%, which is higher than the result of K-means cluster based on the original dataset last time. It is worth mentioning that the match rate of types 1 and 3 of wine is quite high, which is more than 95%, but the match rate of type 2 is still not very well. To sum up, the data are clustered better than before.
+
+### How scale() command affects the results
+Through using the scale() command towards to original dataset, the accuracy rate of K-meas cluster increases in this experiment.
+ 
+
+## K-means classifier of data "iris"
 
 ```{r}
 data(iris)
 library('fpc')
-set.seed(1111)
 data.train = iris[,-5]
-fit.km = kmeans(data.train,3)
-plotcluster(data.train, fit.km$cluster)
+set.seed(10)
+kmean_cluster=function(data,kinds){
+  start=sample(nrow(data),kinds)
+  start_value=data[start,]
+  distances=matrix(0,nrow=nrow(data),ncol=kinds+1)
+  index=matrix(1,nrow=nrow(data),1)
+  while(all(distances[,kinds+1]!=index)){
+    index=distances[,kinds+1]
+    for(j in 1:nrow(data)){
+      for(k in 1:kinds){
+        distances[j,k]=sum((data[j,]-start_value[k,])^2)
+      }
+    }
+    distances[,kinds+1]=apply(distances[,1:kinds],1,which.min)
+    for(k in 1:kinds){
+      start_value[k,]=apply(data[which(distances[,kinds+1]==k),],2,mean)
+    }
+  }
+  return(list(distances[,kinds+1],start_value))
+}
+
+fit.km=kmean_cluster(data.train,3)[1]
+plotcluster(data.train, unlist(fit.km))
 
 ```
 
-### Clusters analysis 3
+
+```{r}
+fit=unlist(fit.km)
+test1=matrix(0,3,3)
+types=c("setosa","versicolor","virginica")
+for(i in 1:3){
+  for(j in 1:3){
+    test1[i,j]=sum(iris[which(fit==i),5]==types[j])/sum(fit==i)
+  }
+}
+test1
+```
+
+
+According to the outcome, we can see the iris types "setosa","versicolor","virginica" are corresponding to k-means cluster types 2,3,1 respectively. Then, we can calculate the match rate
+
+```{r}
+a1=sum(fit[which(iris[,5]=="setosa")]==2)
+a2=sum(fit[which(iris[,5]=="versicolor")]==3)
+a3=sum(fit[which(iris[,5]=="virginica")]==1)
+accuracy=(a1+a2+a3)/nrow(iris)
+```
+
+The number of original type 'setosa' in dataset iris is `r sum(iris[,5]=="setosa")`.
+
+The number of original type 'versicolor' in dataset iris is `r sum(iris[,5]=="versicolor")`.
+
+The number of original type 'virginica' in dataset iris is `r sum(iris[,5]=="virginica")`.
+
+The number of K-means cluster successfully matches original type 'setosa' in dataset iris is `r a1`.
+
+The number of K-means cluster successfully matches original type 'versicolor' in dataset iris is `r a2`.
+
+The number of K-means cluster successfully matches original type 'virginica' in dataset iris is `r a3`.
+
+The matched rate of original type 'setosa' in iris is `r a1/sum(iris[,5]=="setosa")`.
+
+The matched rate of original type 'versicolor' in iris is `r a2/sum(iris[,5]=="versicolor")`.
+
+The matched rate of original type 'virginica' in iris is `r a3/sum(iris[,5]=="virginica")`.
+
+The total accuracy of K-means cluster is `r accuracy`.
+
+### K-means cluster analysis 3
+(1) According to the plot, one can observe that the majority of the samples are separated into three different clusters. In addition, the cluster 2 is classified quite well. Although some points are very close to points in other clusters, the result of clusters is quite well as a whole.
+(2) It can be seen from our algorithm that the total accuracy is 88%, among which the match rates of types 1 and 2 of wine are very high. It should be pointed out that the match rate of type 'setosa' is 100%, which means it classified quite well.
 
 
 ```{r}
 data(iris)
 library('fpc')
-set.seed(111)
 data.train = scale(iris[,-5])
-fit.km = kmeans(data.train,3)
-plotcluster(data.train, fit.km$cluster)
+set.seed(10)
+kmean_cluster=function(data,kinds){
+  start=sample(nrow(data),kinds)
+  start_value=data[start,]
+  distances=matrix(0,nrow=nrow(data),ncol=kinds+1)
+  index=matrix(1,nrow=nrow(data),1)
+  while(all(distances[,kinds+1]!=index)){
+    index=distances[,kinds+1]
+    for(j in 1:nrow(data)){
+      for(k in 1:kinds){
+        distances[j,k]=sum((data[j,]-start_value[k,])^2)
+      }
+    }
+    distances[,kinds+1]=apply(distances[,1:kinds],1,which.min)
+    for(k in 1:kinds){
+      start_value[k,]=apply(data[which(distances[,kinds+1]==k),],2,mean)
+    }
+  }
+  return(list(distances[,kinds+1],start_value))
+}
+
+fit.km=kmean_cluster(data.train,3)[1]
+plotcluster(data.train, unlist(fit.km))
 
 ```
 
-### Clusters analysis 4
+
+```{r}
+fit=unlist(fit.km)
+test1=matrix(0,3,3)
+types=c("setosa","versicolor","virginica")
+for(i in 1:3){
+  for(j in 1:3){
+    test1[i,j]=sum(iris[which(fit==i),5]==types[j])/sum(fit==i)
+  }
+}
+test1
+```
+
+
+According to the outcome, we can see the iris types "setosa","versicolor","virginica" are corresponding to k-means cluster types 2,3,1 respectively. Then, we can calculate the match rate
+
+```{r}
+a1=sum(fit[which(iris[,5]=="setosa")]==2)
+a2=sum(fit[which(iris[,5]=="versicolor")]==3)
+a3=sum(fit[which(iris[,5]=="virginica")]==1)
+accuracy=(a1+a2+a3)/nrow(iris)
+```
+
+The number of original type 'setosa' in dataset iris is `r sum(iris[,5]=="setosa")`.
+
+The number of original type 'versicolor' in dataset iris is `r sum(iris[,5]=="versicolor")`.
+
+The number of original type 'virginica' in dataset iris is `r sum(iris[,5]=="virginica")`.
+
+The number of K-means cluster successfully matches original type 'setosa' in dataset iris is `r a1`.
+
+The number of K-means cluster successfully matches original type 'versicolor' in dataset iris is `r a2`.
+
+The number of K-means cluster successfully matches original type 'virginica' in dataset iris is `r a3`.
+
+The matched rate of original type 'setosa' in iris is `r a1/sum(iris[,5]=="setosa")`.
+
+The matched rate of original type 'versicolor' in iris is `r a2/sum(iris[,5]=="versicolor")`.
+
+The matched rate of original type 'virginica' in iris is `r a3/sum(iris[,5]=="virginica")`.
+
+The total accuracy of K-means cluster is `r accuracy`.
+
+### K-means cluster analysis 4
+
+(1) According to the plot, we can see that the majority of the samples are separated into three different clusters. However, compared with the plot of the cluster result of original data, we can see that type 1 and 3 become much more closer, and some of them are even classified into other clusters, which means that the result of cluster might not be better than last time.
+(2) It can be seen from our algorithm that the total accuracy is 85.33%. Although this accuracy is acceptable, it is lower than the result of K-means cluster based on the original dataset last time.
+
+### How scale() command affects the results
+Through using the scale() command towards to original dataset, the accuracy rate of K-meas cluster decreases in this experiment.
 
 
 
