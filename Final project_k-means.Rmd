@@ -176,8 +176,8 @@ The total accuracy of K-means cluster is `r accuracy`.
 (2) It can be seen from our algorithm that the total accuracy is 76.96%, which is higher than the result of K-means cluster based on the original dataset last time. It is worth mentioning that the match rate of types 1 and 3 of wine is quite high, which is more than 95%, but the match rate of type 2 is still not very well. To sum up, the data are clustered better than before.
 
 ### How scale() command affects the results
-Through using the scale() command towards to original dataset, the accuracy rate of K-meas cluster increases in this experiment.
- 
+(1)Through using the scale() command towards to original dataset, the accuracy rate of K-meas cluster increases in this experiment.
+(2) However, whether the scale() command can always improve the result of cluster still need to be tested. In fact, our group have tried plenty of initial points of K-means, and we found that in some cases, scale() command would decrease the final cluster accuracy. The reason might be that scale() command makes the original data become much closer to each other, which would potentially make it more difficult to cluster. As a result, we cannot make the conclusion that scale() command can always improve the accuracy.  
 
 ## K-means classifier of data "iris"
 
@@ -338,8 +338,9 @@ The total accuracy of K-means cluster is `r accuracy`.
 (2) It can be seen from our algorithm that the total accuracy is 85.33%. Although this accuracy is acceptable, it is lower than the result of K-means cluster based on the original dataset last time.
 
 ### How scale() command affects the results
-Through using the scale() command towards to original dataset, the accuracy rate of K-meas cluster decreases in this experiment.
-
+(1)Through using the scale() command towards to original dataset, the accuracy rate of K-meas cluster decreases in this experiment.
+(2) As we have discussed when analyzing the "wine" dataset, scale() command cannot improve the accuracy all the time. To verify this, our group also carried out quite a lot of experiments by using the "iris" dataset, and we found that scale() command could both increase or decrease the final cluster accuracy.
+(3) On one hand, the result of accuracy might be influenced by the initial points of K-means, which is also tested by us through many experiments. On the other hand, as we discussed before, scale() command makes the original data become much closer to each other, which would make it difficult to cluster. In fact, the original dataset would affect the result of transformed data by using scale(), which would further influence the accuracy.
 
 
 
