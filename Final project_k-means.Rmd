@@ -42,6 +42,52 @@ According to the outcome, we can see the types
 (1)According to the plot, one can observe that the majority of the samples are separated into three different clusters. However, some samples which are separated into different clusters are very close to each other, and some of them are even enclosed by samples in other clusters. As a result, the outcome of clusters make sense to some degree but maybe not quite well.
 (2)It can be seen that between_SS / total_SS =  85.1 %, which means that the distance between clusters are relatively large, and the clusters are well-separated to some extent but not quite well.
 
+### Function of scale()
+Scale command can centralize and standardize an array. The numeric centering and scalings are returned as attributes: "scaled:center" and "scaled:scale". Towards each number $x$ in the array, scale command change it into $x_{scale}= \frac{x-scaled:cente}{scaled:scale}$.
+
+To be special, scaled:center is the mean value of the array, which is used to make the array centralization. scaled:scale is the sample standard deviation of the centralized array.
+
+```{r}
+data(wine, package="rattle")
+library('fpc')
+set.seed(111)
+data.train = scale(wine[,-1])
+fit.km = kmeans(data.train,3)
+plotcluster(data.train, fit.km$cluster)
+
+```
+
+### Clusters analysis 2
+
+```{r}
+data(iris)
+library('fpc')
+set.seed(1111)
+data.train = iris[,-5]
+fit.km = kmeans(data.train,3)
+plotcluster(data.train, fit.km$cluster)
+
+```
+
+### Clusters analysis 3
+
+
+```{r}
+data(iris)
+library('fpc')
+set.seed(111)
+data.train = scale(iris[,-5])
+fit.km = kmeans(data.train,3)
+plotcluster(data.train, fit.km$cluster)
+
+```
+
+### Clusters analysis 4
+
+
+
+
+
 
 
 
