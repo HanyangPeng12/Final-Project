@@ -3,11 +3,7 @@ mh.beta <- function(iterations, start,shape1, shape2,c) {
   draws <- c()
   theta.update <- function(theta.old, shape1, shape2) {
     theta.new <- rbeta(1, c*theta.old, c*(1-theta.old))
-    accept.prob <- dbeta(theta.new, shape1 = shape1, shape2=shape2)/dbeta(theta.old,shape1 = shape1, shape2 = shape2)*
-      (dbeta(theta.old,c*theta.new,c*(1-theta.new))/dbeta(theta.new,c*theta.old,c*(1-theta.old)))
-    #Because the Beta distribution is not symmetric, so the accept.prob
-    #should have another part, which is neutralized in symmetric situation
-    #So we should add that part again.
+    accept.prob <- dbeta(theta.new, shape1 = shape1, shape2=shape2)/dbeta(theta.old,shape1 = shape1, shape2 = shape2)
     if (runif(1) <= accept.prob) 
     {theta.update=theta.new} 
     else 
