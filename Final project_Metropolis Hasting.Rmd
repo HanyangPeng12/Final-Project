@@ -80,38 +80,59 @@ According to the comparison of histogram and the result of K-S test, the distrib
 Therefore, we can conclude that the sampler could simulate the target distribution quite accurately.
 
 #Problem 3
+Set $c=0.1,2.5,10$ separately, we rerun the M-H algorithm, and have the trace plots, autocorrelation plots and histograms for these three samplers. The related plots are as below.
+
 ```{r}
-draws<-mh.beta(10000, start = runif(1),shape1 = 6, shape2 = 4,c=0.1)
+draws1<-mh.beta(10000, start = runif(1),shape1 = 6, shape2 = 4,c=0.1)
 par(mfrow=c(1,3))  #1 row, 3 columns
- plot(draws)
- acf(draws)
- hist(draws,freq=F) 
+ plot(draws1)
+ acf(draws1)
+ hist(draws1,freq=F) 
 lines(x,dbeta(x,6,4),col="red")
-ks.test(draws,"pbeta",6,4) 
 ```
 
 ```{r}
-draws<-mh.beta(10000, start = runif(1),shape1 = 6, shape2 = 4,c=2.5)
+draws2<-mh.beta(10000, start = runif(1),shape1 = 6, shape2 = 4,c=2.5)
 par(mfrow=c(1,3))  #1 row, 3 columns
- plot(draws)
- acf(draws)
- hist(draws,freq=F) 
+ plot(draws2)
+ acf(draws2)
+ hist(draws2,freq=F) 
  lines(x,dbeta(x,6,4),col="red")
- ks.test(draws,"pbeta",6,4)
 ```
 
 ```{r}
-draws<-mh.beta(10000, start = runif(1),shape1 = 6, shape2 = 4,c=10)
+draws3<-mh.beta(10000, start = runif(1),shape1 = 6, shape2 = 4,c=10)
 par(mfrow=c(1,3))  #1 row, 3 columns
- plot(draws)
- acf(draws)
- hist(draws,freq=F) 
+ plot(draws3)
+ acf(draws3)
+ hist(draws3,freq=F) 
  lines(x,dbeta(x,6,4),col="red")
- ks.test(draws,"pbeta",6,4)
 ```
 
+We compare these samplers by comparing their acceptance rates. Generally speaking, neither a too high or too low acceptance rates would benefit the M-H algorithm. If the acceptance rates is too high, it indicates that the proposal distribution is too narrow compared with the target distribution. In that case, the chain we get actually is just hanging around at a certain range, which would lead to bad simulation. Meanwhile, if the acceptance rates is too low, we would stay at the same point for most of the time, this would cause bad simulation as well. Thus, we usually take an acceptance rates between 20% and 30% to be optimal. 
 
+We define a function to calculate the acceptance rate with $c$ set to different values, the related codes are as below.
 
+```{r}
+accept.rate=function(draws){
+  j=0
+  for(i in 1:(length(draws)-1)){
+    if (draws[i]==draws[i+1]){
+      j=j
+    }
+    else{j=j+1}
+  }
+  return(j/length(draws))
+}
+accept.rate(draws) #c=1
+accept.rate(draws1) #c=0.1
+accept.rate(draws2) #c=2.5
+accept.rate(draws3) #C=10
+```
+
+We notice that as $c$ becomes larger, the acceptance rates also get higher. This is because that for a beta distribution $Beta(\alpha,\beta)$, its variance would be $\frac{\alpha \beta}{(\alpha + \beta)^2(\alpha + \beta + 1)}$. Thus, when $c$ becomes larger, the two shape parameters in the proposal function simultaneously get larger, which leads to the decrease in the variance of the proposal function. Therefore, larger $c$ would lead to lower variance in the proposal distribution, which means the new value we generate each time would generally be closer to the old value, and the acceptance rates would go higher.
+
+As we mentioned above, an acceptance rates between 20% and 30% would be optimal, thus $c=1$ would be the most appropriate choice for the sampler, and would be most effective sampler drawing from the target distribution. 
 
 
 
