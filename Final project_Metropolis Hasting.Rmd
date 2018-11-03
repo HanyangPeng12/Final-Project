@@ -1,6 +1,8 @@
 ---
 title: "Stat 378 Final Project Matropolis-Hasting Alagorithm"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -38,8 +40,7 @@ mh.beta <- function(iterations, start,shape1, shape2,c) {
   }
   # if the acceptance probability is lower then stay with the old value 
   for (i in 1:iterations) {
-    draws[i] <- phi.old <- phi.update(phi.old, shape1 = shape1,
-                                          shape2 = shape2)
+    draws[i] <- phi.old <- phi.update(phi.old, shape1 = shape1, shape2 = shape2)
   }
   #give the new value to the chain
   return(draws[1:iterations])
